@@ -100,27 +100,9 @@ body {
   gap: 20px;
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 20px;
-  align-items: start;
-}
-
-.main {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.aside {
+.log-footer {
   position: sticky;
-  top: 20px;
-  align-self: start;
-}
-
-.log-card {
-  max-height: calc(100vh - 120px);
+  bottom: 12px;
 }
 
 .card {
@@ -413,7 +395,7 @@ input:focus, select:focus {
 .log {
   display: grid;
   gap: 8px;
-  max-height: 260px;
+  max-height: 130px;
   overflow: auto;
   padding-right: 6px;
 }
@@ -421,11 +403,11 @@ input:focus, select:focus {
 .log-row {
   display: grid;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 6px 8px;
   border-radius: 10px;
   background: #faf7f2;
   border: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .log-top {
@@ -442,8 +424,8 @@ input:focus, select:focus {
 .log-method {
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 11px;
-  padding: 2px 6px;
+  font-size: 10px;
+  padding: 1px 6px;
   border-radius: 999px;
   background: #fff;
   border: 1px solid var(--line);
@@ -459,7 +441,7 @@ input:focus, select:focus {
 
 .log-status-chip {
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 1px 8px;
   border-radius: 999px;
   background: #fff;
   border: 1px solid var(--line);
@@ -471,7 +453,7 @@ input:focus, select:focus {
 
 .log-url {
   word-break: break-all;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .log-payload,
@@ -491,7 +473,7 @@ input:focus, select:focus {
 .log-response code {
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   background: #fff;
-  padding: 6px 8px;
+  padding: 4px 6px;
   border-radius: 8px;
   border: 1px solid var(--line);
   display: block;
@@ -507,13 +489,5 @@ input:focus, select:focus {
   .table-head, .table-row {
     grid-template-columns: 1fr;
     gap: 6px;
-  }
-
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .aside {
-    position: static;
   }
 }
