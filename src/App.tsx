@@ -202,8 +202,8 @@ export default function App() {
       setError('')
       try {
         const [imgList, sessionList] = await Promise.all([
-          apiGet<ImageInfo[]>('/api/v1/image', addLog, updateLog),
-          apiGet<SessionDto[]>('/api/v1/session', addLog, updateLog)
+          apiGet<ImageInfo[]>('/api/v1/image'),
+          apiGet<SessionDto[]>('/api/v1/session')
         ])
         setImages(imgList)
         setSessions(sessionList)
@@ -229,7 +229,7 @@ export default function App() {
           continue
         }
         try {
-          const url = await apiGetImage(name, addLog, updateLog)
+          const url = await apiGetImage(name)
           if (!cancelled) urls[name] = url
         } catch {
           // ignore single image errors
@@ -258,9 +258,7 @@ export default function App() {
     const fetchClients = async () => {
       try {
         const data = await apiGet<ClientStatus[]>(
-          `/api/v1/session/${selectedSessionId}/information`,
-          addLog,
-          updateLog
+          `/api/v1/session/${selectedSessionId}/information`
         )
         setClients(data)
       } catch (e: any) {
