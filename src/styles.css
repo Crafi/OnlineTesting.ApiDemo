@@ -100,6 +100,29 @@ body {
   gap: 20px;
 }
 
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.aside {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.log-card {
+  max-height: calc(100vh - 120px);
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--line);
@@ -347,6 +370,94 @@ input:focus, select:focus {
   color: var(--brand-2);
 }
 
+.log {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.log-row {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #faf7f2;
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.log-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.log-ts {
+  color: var(--muted);
+}
+
+.log-method {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.log-method.get {
+  color: var(--brand-2);
+}
+
+.log-method.post {
+  color: #7a5a28;
+}
+
+.log-status-chip {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.log-duration {
+  color: var(--muted);
+}
+
+.log-url {
+  word-break: break-all;
+  font-size: 12px;
+}
+
+.log-payload,
+.log-response {
+  display: grid;
+  gap: 4px;
+}
+
+.log-label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.log-payload code,
+.log-response code {
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  background: #fff;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  display: block;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 840px) {
   .hero {
     flex-direction: column;
@@ -356,5 +467,13 @@ input:focus, select:focus {
   .table-head, .table-row {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .aside {
+    position: static;
   }
 }
