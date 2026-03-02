@@ -347,7 +347,7 @@ export default function App() {
           <span className="dot" />
           <span>API: {apiBase}</span>
           <span className="sep" />
-          <span>v{appVersion}</span>
+          <span>{appVersion}</span>
         </div>
       </header>
 
@@ -404,10 +404,12 @@ export default function App() {
                 )}
                 {clients.map(c => (
                   <div key={c.id} className="table-row">
-                    <span>{c.patientName || '—'}</span>
-                    <span>{c.deviceId || '—'}</span>
+                    <span className="cell-wrap">{c.patientName || '—'}</span>
+                    <span className="cell-wrap">{c.deviceId || '—'}</span>
                     <span className={`pill status-${c.status}`}>{statusLabel(c.status)}</span>
-                    <span>{c.errors?.join(', ') || '—'}</span>
+                    <span className="cell-wrap cell-errors" title={c.errors?.join(', ') || ''}>
+                      {c.errors?.join(', ') || '—'}
+                    </span>
                   </div>
                 ))}
               </div>

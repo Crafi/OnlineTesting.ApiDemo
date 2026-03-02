@@ -259,6 +259,19 @@ input:focus, select:focus {
   background: #faf7f2;
   border: 1px solid var(--line);
   font-size: 13px;
+  align-items: start;
+}
+
+.cell-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cell-errors {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .pill {
@@ -300,19 +313,20 @@ input:focus, select:focus {
 }
 
 .image-preview {
-  height: 120px;
+  aspect-ratio: 1 / 1;
   border-radius: 10px;
   background: #f3ede4;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border: 1px solid #ece3d7;
 }
 
 .image-preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .placeholder {
@@ -323,6 +337,11 @@ input:focus, select:focus {
 .image-name {
   font-size: 12px;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .form {
