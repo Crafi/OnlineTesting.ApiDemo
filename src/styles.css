@@ -268,10 +268,31 @@ input:focus, select:focus {
 }
 
 .cell-errors {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: grid;
+  gap: 6px;
+}
+
+.cell-errors summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--brand-2);
+  list-style: none;
+}
+
+.cell-errors summary::-webkit-details-marker {
+  display: none;
+}
+
+.cell-errors-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  max-height: 160px;
+  overflow: auto;
 }
 
 .pill {

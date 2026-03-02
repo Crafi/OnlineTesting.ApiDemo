@@ -407,9 +407,12 @@ export default function App() {
                     <span className="cell-wrap">{c.patientName || '—'}</span>
                     <span className="cell-wrap">{c.deviceId || '—'}</span>
                     <span className={`pill status-${c.status}`}>{statusLabel(c.status)}</span>
-                    <span className="cell-wrap cell-errors" title={c.errors?.join(', ') || ''}>
-                      {c.errors?.join(', ') || '—'}
-                    </span>
+                    <details className="cell-errors">
+                      <summary>{c.errors?.length ? `Errors (${c.errors.length})` : '—'}</summary>
+                      <div className="cell-errors-body">
+                        {c.errors?.length ? c.errors.join('\n') : '—'}
+                      </div>
+                    </details>
                   </div>
                 ))}
               </div>
