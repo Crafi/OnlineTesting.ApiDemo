@@ -1,0 +1,4 @@
+window.__APP_CONFIG__ = {
+  VITE_API_BASE_URL: "__VITE_API_BASE_URL__",
+  VITE_APP_VERSION: "__VITE_APP_VERSION__",
+};

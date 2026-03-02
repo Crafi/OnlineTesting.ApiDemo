@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || 'https://localhost:7227'
+import { getApiBaseUrl, getAppVersion } from './lib/runtimeConfig'
 
 type ImageInfo = { name?: string | null }
 
@@ -29,6 +28,16 @@ type SetTestRequest = {
   deviceType?: number
 }
 
+type LogEntry = {
+  id: string
+  ts: string
+  method: string
+  url: string
+  status?: number
+  ok?: boolean
+  note?: string
+}
+
 const statusLabel = (status?: number) => {
   if (status === 0) return 'Connected'
   if (status === 1) return 'Timeout'
@@ -48,8 +57,19 @@ const deviceOptions = [
   { value: 2, label: 'Mobile' }
 ]
 
-async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`)
+function makeId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+async function apiGet<T>(path: string, log?: (entry: LogEntry) => void): Promise<T> {
+  const base = getApiBaseUrl() || 'https://localhost:7227'
+  const url = `${base}${path}`
+  const entry: LogEntry = { id: makeId(), ts: new Date().toLocaleTimeString(), method: 'GET', url }
+  log?.(entry)
+  const res = await fetch(url)
+  entry.status = res.status
+  entry.ok = res.ok
+  log?.({ ...entry })
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || `Request failed: ${res.status}`)
@@ -57,14 +77,27 @@ async function apiGet<T>(path: string): Promise<T> {
   return (await res.json()) as T
 }
 
-async function apiPost<T>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`,
+async function apiPost<T>(path: string, body?: unknown, log?: (entry: LogEntry) => void): Promise<T> {
+  const base = getApiBaseUrl() || 'https://localhost:7227'
+  const url = `${base}${path}`
+  const entry: LogEntry = {
+    id: makeId(),
+    ts: new Date().toLocaleTimeString(),
+    method: 'POST',
+    url,
+    note: body ? JSON.stringify(body) : undefined
+  }
+  log?.(entry)
+  const res = await fetch(url,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined
     }
   )
+  entry.status = res.status
+  entry.ok = res.ok
+  log?.({ ...entry })
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || `Request failed: ${res.status}`)
@@ -77,8 +110,15 @@ async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return undefined as T
 }
 
-async function apiGetImage(name: string): Promise<string> {
-  const res = await fetch(`${API_BASE}/api/v1/image/${encodeURIComponent(name)}`)
+async function apiGetImage(name: string, log?: (entry: LogEntry) => void): Promise<string> {
+  const base = getApiBaseUrl() || 'https://localhost:7227'
+  const url = `${base}/api/v1/image/${encodeURIComponent(name)}`
+  const entry: LogEntry = { id: makeId(), ts: new Date().toLocaleTimeString(), method: 'GET', url }
+  log?.(entry)
+  const res = await fetch(url)
+  entry.status = res.status
+  entry.ok = res.ok
+  log?.({ ...entry })
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || `Image failed: ${res.status}`)
@@ -88,6 +128,8 @@ async function apiGetImage(name: string): Promise<string> {
 }
 
 export default function App() {
+  const apiBase = useMemo(() => getApiBaseUrl() || 'https://localhost:7227', [])
+  const appVersion = useMemo(() => getAppVersion(), [])
   const [images, setImages] = useState<ImageInfo[]>([])
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({})
   const [sessions, setSessions] = useState<SessionDto[]>([])
@@ -96,6 +138,7 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>('')
   const [info, setInfo] = useState<string>('')
+  const [logs, setLogs] = useState<LogEntry[]>([])
   const [testReq, setTestReq] = useState<SetTestRequest>({
     testIdentification: 1,
     testName: 'Default Test',
@@ -108,14 +151,20 @@ export default function App() {
   const refreshTimer = useRef<number | null>(null)
 
   const imageNames = useMemo(() => images.map(i => i.name).filter(Boolean) as string[], [images])
+  const addLog = (entry: LogEntry) => {
+    setLogs(prev => {
+      const next = [entry, ...prev]
+      return next.slice(0, 200)
+    })
+  }
 
   useEffect(() => {
     const run = async () => {
       setError('')
       try {
         const [imgList, sessionList] = await Promise.all([
-          apiGet<ImageInfo[]>('/api/v1/image'),
-          apiGet<SessionDto[]>('/api/v1/session')
+          apiGet<ImageInfo[]>('/api/v1/image', addLog),
+          apiGet<SessionDto[]>('/api/v1/session', addLog)
         ])
         setImages(imgList)
         setSessions(sessionList)
@@ -141,7 +190,7 @@ export default function App() {
           continue
         }
         try {
-          const url = await apiGetImage(name)
+          const url = await apiGetImage(name, addLog)
           if (!cancelled) urls[name] = url
         } catch {
           // ignore single image errors
@@ -169,7 +218,10 @@ export default function App() {
 
     const fetchClients = async () => {
       try {
-        const data = await apiGet<ClientStatus[]>(`/api/v1/session/${selectedSessionId}/information`)
+        const data = await apiGet<ClientStatus[]>(
+          `/api/v1/session/${selectedSessionId}/information`,
+          addLog
+        )
         setClients(data)
       } catch (e: any) {
         setError(e?.message || 'Failed to load clients')
@@ -196,7 +248,7 @@ export default function App() {
     setError('')
     setInfo('')
     try {
-      const session = await apiPost<SessionDto>('/api/v1/session/start')
+      const session = await apiPost<SessionDto>('/api/v1/session/start', undefined, addLog)
       setSessions(prev => [session, ...prev])
       if (session.id) setSelectedSessionId(session.id)
       setInfo('Session started')
@@ -213,7 +265,7 @@ export default function App() {
     setError('')
     setInfo('')
     try {
-      await apiPost('/api/v1/session/end', { id: selectedSessionId })
+      await apiPost('/api/v1/session/end', { id: selectedSessionId }, addLog)
       setSessions(prev => prev.filter(s => s.id !== selectedSessionId))
       setSelectedSessionId('')
       setInfo('Session ended')
@@ -237,7 +289,7 @@ export default function App() {
       await apiPost('/api/v1/test/set', {
         ...testReq,
         sessionId: selectedSessionId
-      })
+      }, addLog)
       setInfo('Test sent')
     } catch (err: any) {
       setError(err?.message || 'Failed to send test')
@@ -252,10 +304,15 @@ export default function App() {
         <div>
           <p className="eyebrow">Online Testing</p>
           <h1>Session Control Console</h1>
+          <p className="sub">
+            Простая панель для управления сессиями, клиентами и тестами.
+          </p>
         </div>
         <div className="status-chip">
           <span className="dot" />
-          <span>API: {API_BASE}</span>
+          <span>API: {apiBase}</span>
+          <span className="sep" />
+          <span>v{appVersion}</span>
         </div>
       </header>
 
@@ -424,6 +481,34 @@ export default function App() {
               Send test
             </button>
           </form>
+        </div>
+      </section>
+
+      <section className="grid">
+        <div className="card">
+          <div className="row">
+            <h2 style={{ marginRight: 'auto' }}>Request Log</h2>
+            <button className="btn" onClick={() => setLogs([])}>Clear</button>
+          </div>
+          <div className="log">
+            {logs.length === 0 && <div className="muted">No requests yet</div>}
+            {logs.map(l => (
+              <div key={l.id} className="log-row">
+                <span className="log-ts">{l.ts}</span>
+                <span className={`log-method ${l.method.toLowerCase()}`}>{l.method}</span>
+                <span className="log-url">{l.url}</span>
+                <span className={`log-status ${l.ok ? 'ok' : 'fail'}`}>
+                  {l.status ?? '...'}
+                </span>
+              </div>
+            ))}
+          </div>
+          {logs[0]?.note && (
+            <div className="log-note">
+              <div className="muted">Last payload</div>
+              <code>{logs[0].note}</code>
+            </div>
+          )}
         </div>
       </section>
 
