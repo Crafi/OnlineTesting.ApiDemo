@@ -20,6 +20,7 @@ type SetTestRequest = {
   sessionId?: string
   testIdentification?: number
   testName?: string
+  testType?: number
   eye?: number
   imageName?: string
   distance?: number
@@ -57,6 +58,12 @@ const deviceOptions = [
   { value: 0, label: 'All' },
   { value: 1, label: 'Desktop' },
   { value: 2, label: 'Mobile' }
+]
+
+const testTypeOptions = [
+  { value: 0, label: 'VisualAcuity' },
+  { value: 1, label: 'Color' },
+  { value: 2, label: 'Amsler' }
 ]
 
 function makeId() {
@@ -178,6 +185,7 @@ export default function App() {
   const [testReq, setTestReq] = useState<SetTestRequest>({
     testIdentification: 1,
     testName: 'Default Test',
+    testType: 0,
     eye: 2,
     distance: 60,
     visualAcuity: 1.0,
@@ -463,6 +471,17 @@ export default function App() {
                 onChange={e => setTestReq(prev => ({ ...prev, eye: Number(e.target.value) }))}
               >
                 {eyeOptions.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>Test type</label>
+              <select
+                value={testReq.testType ?? 0}
+                onChange={e => setTestReq(prev => ({ ...prev, testType: Number(e.target.value) }))}
+              >
+                {testTypeOptions.map(o => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
