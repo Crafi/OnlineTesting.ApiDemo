@@ -5,12 +5,11 @@ type ImageInfo = { name?: string | null }
 
 type SessionDto = {
   id?: string
+  patientName?: string | null
   createdAt?: string
 }
 
 type ClientStatus = {
-  id?: string
-  patientName?: string | null
   deviceId?: string | null
   status?: number
   errors?: string[] | null
@@ -177,6 +176,7 @@ export default function App() {
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({})
   const [sessions, setSessions] = useState<SessionDto[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('')
+  const [patientName, setPatientName] = useState<string>('')
   const [clients, setClients] = useState<ClientStatus[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>('')
@@ -290,11 +290,15 @@ export default function App() {
   }, [imageNames, testReq.imageName])
 
   const startSession = async () => {
+    if (!patientName.trim()) {
+      setError('Patient name is required')
+      return
+    }
     setBusy(true)
     setError('')
     setInfo('')
     try {
-      const session = await apiPost<SessionDto>('/api/v1/session/start', undefined, addLog, updateLog)
+      const session = await apiPost<SessionDto>('/api/v1/session/start', { patientName }, addLog, updateLog)
       setSessions(prev => [session, ...prev])
       if (session.id) setSelectedSessionId(session.id)
       setInfo('Session started')
@@ -362,6 +366,14 @@ export default function App() {
       <section className="grid">
         <div className="card">
           <h2>Sessions</h2>
+          <div className="field">
+            <label>Patient name</label>
+            <input
+              value={patientName}
+              onChange={e => setPatientName(e.target.value)}
+              placeholder="Enter patient name"
+            />
+          </div>
           <div className="row">
             <button className="btn primary" onClick={startSession} disabled={busy}>
               Start session
@@ -379,7 +391,7 @@ export default function App() {
               <option value="">Select session</option>
               {sessions.map(s => (
                 <option key={s.id} value={s.id}>
-                  {s.id} — {s.createdAt ? new Date(s.createdAt).toLocaleString() : 'n/a'}
+                  {s.patientName ? `${s.patientName} — ` : ''}{s.id} — {s.createdAt ? new Date(s.createdAt).toLocaleString() : 'n/a'}
                 </option>
               ))}
             </select>
@@ -388,7 +400,7 @@ export default function App() {
             {sessions.length === 0 && <div className="muted">No sessions yet</div>}
             {sessions.map(s => (
               <div key={s.id} className={`session-item ${s.id === selectedSessionId ? 'active' : ''}`}>
-                <div className="session-id">{s.id}</div>
+                <div className="session-id">{s.patientName || '—'} <span className="muted" style={{ fontWeight: 'normal', fontSize: '0.8em' }}>({s.id})</span></div>
                 <div className="session-time">{s.createdAt ? new Date(s.createdAt).toLocaleString() : 'n/a'}</div>
               </div>
             ))}
@@ -400,7 +412,6 @@ export default function App() {
           <p className="muted">Auto-refresh every 3 seconds.</p>
           <div className="table">
             <div className="table-head">
-              <span>Patient</span>
               <span>Device</span>
               <span>Status</span>
               <span>Errors</span>
@@ -408,9 +419,8 @@ export default function App() {
             {clients.length === 0 && (
               <div className="table-row muted">No clients for this session</div>
             )}
-            {clients.map(c => (
-              <div key={c.id} className="table-row">
-                <span className="cell-wrap">{c.patientName || '—'}</span>
+            {clients.map((c, i) => (
+              <div key={c.deviceId ?? i} className="table-row">
                 <span className="cell-wrap">{c.deviceId || '—'}</span>
                 <span className={`pill status-${c.status}`}>{statusLabel(c.status)}</span>
                 <details className="cell-errors">
