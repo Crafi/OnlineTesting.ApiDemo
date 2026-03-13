@@ -9,8 +9,8 @@ type SessionDto = {
   createdAt?: string
 }
 
-type ClientStatus = {
-  deviceId?: string | null
+type DeviceStatus = {
+  id?: string | null
   status?: number
   errors?: string[] | null
 }
@@ -177,7 +177,7 @@ export default function App() {
   const [sessions, setSessions] = useState<SessionDto[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('')
   const [patientName, setPatientName] = useState<string>('')
-  const [clients, setClients] = useState<ClientStatus[]>([])
+  const [clients, setClients] = useState<DeviceStatus[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>('')
   const [info, setInfo] = useState<string>('')
@@ -265,7 +265,7 @@ export default function App() {
 
     const fetchClients = async () => {
       try {
-        const data = await apiGet<ClientStatus[]>(
+        const data = await apiGet<DeviceStatus[]>(
           `/api/v1/session/${selectedSessionId}/information`
         )
         setClients(data)
@@ -419,14 +419,14 @@ export default function App() {
             {clients.length === 0 && (
               <div className="table-row muted">No clients for this session</div>
             )}
-            {clients.map((c, i) => (
-              <div key={c.deviceId ?? i} className="table-row">
-                <span className="cell-wrap">{c.deviceId || '—'}</span>
-                <span className={`pill status-${c.status}`}>{statusLabel(c.status)}</span>
+            {clients.map((d, i) => (
+              <div key={d.id ?? i} className="table-row">
+                <span className="cell-wrap">{d.id || '—'}</span>
+                <span className={`pill status-${d.status}`}>{statusLabel(d.status)}</span>
                 <details className="cell-errors">
-                  <summary>{c.errors?.length ? `Errors (${c.errors.length})` : '—'}</summary>
+                  <summary>{d.errors?.length ? `Errors (${d.errors.length})` : '—'}</summary>
                   <div className="cell-errors-body">
-                    {c.errors?.length ? c.errors.join('\n') : '—'}
+                    {d.errors?.length ? d.errors.join('\n') : '—'}
                   </div>
                 </details>
               </div>
