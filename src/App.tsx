@@ -25,6 +25,7 @@ type SetTestRequest = {
   distance?: number
   visualAcuity?: number
   glassesOff?: boolean
+  rotationAngel?: number
   deviceType?: number
 }
 
@@ -190,6 +191,7 @@ export default function App() {
     distance: 60,
     visualAcuity: 1.0,
     glassesOff: false,
+    rotationAngel: 0,
     deviceType: 0
   })
   const refreshTimer = useRef<number | null>(null)
@@ -534,6 +536,14 @@ export default function App() {
                 />
                 Glasses off
               </label>
+            </div>
+            <div className="field">
+              <label>Rotation angle (deg)</label>
+              <input
+                type="number"
+                value={testReq.rotationAngel ?? 0}
+                onChange={e => setTestReq(prev => ({ ...prev, rotationAngel: Number(e.target.value) }))}
+              />
             </div>
             <div className="field">
               <label>Device type</label>
